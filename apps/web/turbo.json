@@ -1,0 +1,14 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".astro/**", "public/pagefind/**"],
+      "env": ["PUBLIC_SITE_URL", "PUBLIC_GOOGLE_SITE_VERIFICATION"]
+    },
+    "test": {
+      "outputs": []
+    }
+  }
+}
