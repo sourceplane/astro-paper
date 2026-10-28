@@ -1,0 +1,18 @@
+apiVersion: orun.io/v1
+kind: TaskContract
+metadata:
+  name: AP-2
+  title: "The blog on Workers"
+spec:
+  goal: AstroPaper runs on Cloudflare Workers + Static Assets — built static with its search index and Open Graph images, served as assets behind one Worker — with its README saying how it maps to Vercel
+  affects:
+    - apps/web
+    - pnpm-lock.yaml
+    - pnpm-workspace.yaml
+    - README.md
+    - .gitignore
+    - .vscode
+  doneWhen:
+    - pnpm typecheck, lint, test and build are green
+    - wrangler dev serves every route the theme has, its search index, its images and its 404
+  gates: []
