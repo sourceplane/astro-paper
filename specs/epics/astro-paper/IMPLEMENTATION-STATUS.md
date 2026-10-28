@@ -4,7 +4,7 @@
 |---|---|---|
 | AP0 — the spec | ✅ | the repository's first commit |
 | AP1 — the blog on Workers | ✅ | AP-2 |
-| AP2 — a baseline | planned | AP-3 |
+| AP2 — a baseline | ✅ | AP-3, tagged `baseline-v1` |
 
 ## Departures from the upstream theme
 

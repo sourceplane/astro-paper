@@ -9,7 +9,7 @@ metadata:
 spec:
   title: "Vercel's AstroPaper template on Cloudflare Workers"
   summary: "AstroPaper — a minimal, accessible Astro blog theme (Markdown and MDX posts with tags, archives and pagination, Pagefind search, an Open Graph image per post rendered at build time, light and dark mode, RSS and a sitemap) — builds fully static and is served as Cloudflare Workers Static Assets behind one small Worker, inside the Cirrus baseline's repository conventions, and becomes an Orun baseline that takes a new blog from nothing to live on stage and prod in one landing."
-  state: started
+  state: completed
   milestones:
     - name: "AP0 — the spec"
       exitCriteria:
