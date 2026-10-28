@@ -1,0 +1,20 @@
+// The Worker and the static assets `astro build` and Pagefind emit. The blog
+// is fully static, so the Worker (worker/index.ts) only hands unmatched
+// requests back to the assets, which answer with dist/404.html.
+// `auto-trailing-slash` is the theme's own host's behaviour (Cloudflare
+// Pages): Astro writes each page as <path>/index.html, which is served at
+// <path>/, and <path> redirects there.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "astro-paper-web",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "observability": { "enabled": true }
+}

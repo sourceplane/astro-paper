@@ -1,0 +1,93 @@
+apiVersion: sourceplane.io/v1
+kind: Component
+metadata:
+  name: web
+  description: The blog (a static Astro + Tailwind CSS build with Pagefind search, on Cloudflare Workers + Static Assets, per environment)
+spec:
+  type: cloudflare-workers-assets-turbo
+  lifecycle: production
+  owner: platform
+  # Its pages, attached to it in the workspace's catalog: what the Docs
+  # library shows for it, and what the catalog's docs and runbook checks read.
+  # Generated from what this manifest and its sources declare.
+  docs:
+    overview: docs/overview.md
+    pages:
+      - { path: docs/architecture.md, role: architecture, title: Architecture }
+      - { path: docs/runbook.md, role: runbook, title: Runbook }
+  # `app`, not `web`: a domain and a component share one name space in the
+  # catalog, and a domain called `web` hid this component from it.
+  domain: app
+  path: apps/web
+  # Its own lane per environment: the site's build is the longest job in the
+  # plan, and a shared lane would wait on it.
+  lane: isolated
+  subscribe:
+    environments:
+      - name: dev
+        profile: verify
+      - name: stage
+        profile: verify
+        profileRules:
+          - profile: deploy
+            when:
+              triggerRef: github-push-main
+      - name: prod
+        profile: verify
+        profileRules:
+          - profile: deploy
+            when:
+              triggerRef: github-push-main
+  parameters:
+    nodeVersion: "22"
+    pnpmVersion: "10.12.1"
+
+    workspaceDir: ../..
+    appDir: .
+
+    turboFilter: "@app/web"
+    # The config the dry run and the deploy hand to wrangler: the Worker
+    # (worker/index.ts) and the static build in dist/ as its assets.
+    # The blog builds fully static, so there is no adapter and no generated
+    # config — this committed file is the one wrangler deploys.
+    wranglerConfig: wrangler.jsonc
+
+    # `astro build` (output: 'static') writes every page, post, feed, sitemap
+    # and Open Graph image to dist/, and Pagefind its search index to
+    # dist/pagefind. The Worker is a source file wrangler bundles at deploy;
+    # the lane checks it exists after the build like any entry.
+    workerEntrypoint: worker/index.ts
+    assetsDir: dist
+
+    # Per-env worker name: astro-paper-web-{dev,stage,prod}.
+    workerName: astro-paper-web
+    environmentAwareWorkerName: true
+
+    # The account's workers.dev subdomain; exported to the smoke step as
+    # ${WORKERS_DEV_SUBDOMAIN} and used to build ${DEPLOYED_URL}.
+    workersDevSubdomain: your-workers-subdomain
+
+    installCommand: pnpm install --frozen-lockfile
+    # The site's public origin (canonical and Open Graph links, the sitemap,
+    # robots.txt and the RSS feed are absolute): the environment's SITE_URL
+    # when intent.yaml sets one (a custom domain), else its workers.dev URL.
+    # The subdomain is written out rather than read from
+    # ${WORKERS_DEV_SUBDOMAIN}, which the composition exports to the smoke
+    # step only. ${ORUN_ENVIRONMENT} the runner sets for every step.
+    # astro.config.ts reads PUBLIC_SITE_URL over astro-paper.config.ts's
+    # `site.url`.
+    buildCommand: PUBLIC_SITE_URL="${SITE_URL:-https://astro-paper-web-${ORUN_ENVIRONMENT}.your-workers-subdomain.workers.dev}" pnpm exec turbo run build --filter=@app/web
+
+    # Smoke: the home page carries the theme's introduction ("minimal,
+    # responsive, accessible"), the posts index lists the theme's
+    # configuration post, the Pagefind search index is served, and an unknown
+    # path answers the site's own 404 page with a 404 status (served by the
+    # assets through the Worker). `-L` follows the directory redirect
+    # (/posts → /posts/). Each response is buffered before grep so an early
+    # match cannot SIGPIPE curl.
+    smokeCommand: "html=$(curl -sfL \"${DEPLOYED_URL}/\") && echo \"${html}\" | grep -q 'minimal, responsive, accessible' && posts=$(curl -sfL \"${DEPLOYED_URL}/posts\") && echo \"${posts}\" | grep -q '/posts/how-to-configure-astropaper-theme/' && curl -sf -o /dev/null \"${DEPLOYED_URL}/pagefind/pagefind.js\" && test \"$(curl -s -o /dev/null -w '%{http_code}' \"${DEPLOYED_URL}/no-such-page\")\" = 404"
+  labels:
+    team: platform
+    layer: delivery
+    surface: web
+    runtime: cloudflare

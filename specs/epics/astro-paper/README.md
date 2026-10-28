@@ -8,7 +8,7 @@ in one landing.**
 
 | | |
 |---|---|
-| Status | In progress — AP0 on main |
+| Status | In progress — AP1 on main: the site runs on Workers |
 | Upstream | [satnaing/astro-paper](https://github.com/satnaing/astro-paper) (MIT), at `35cfa7f` (v6.1.0 and one fix, 2026-08-05) |
 | Reference | [astro-boilerplate](https://github.com/sourceplane/astro-boilerplate) — the same scaffolding, tests and bootstrap; [astrowind](https://github.com/sourceplane/astrowind) — the same static build behind one Worker |
 | Key | `AP` |
